@@ -1,6 +1,6 @@
 import { Link, Tabs } from 'expo-router'
 import { Pressable } from 'react-native'
-import { IconDashboard, IconCreditCardPay, IconInfoCircle, IconReport, IconUser, IconHistory } from '@tabler/icons-react-native';
+import { IconDashboard, IconCreditCardPay, IconInfoCircle, IconHistory, IconCategory } from '@tabler/icons-react-native';
 
 export default function TabLayout() {
   return (
@@ -36,10 +36,10 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="reports"
+        name="categories"
         options={{
-          title: 'Reports',
-          tabBarIcon: ({ color }) => <IconReport color={color} />,
+          title: 'Categories',
+          tabBarIcon: ({ color }) => <IconCategory color={color} />,
         }}
       />
       <Tabs.Screen
