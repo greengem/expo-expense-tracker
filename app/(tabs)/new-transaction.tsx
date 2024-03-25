@@ -1,8 +1,8 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { ScrollView, Input, Button, Text, YStack, XStack } from 'tamagui';
+import { View, Input, Button, Text, YStack, XStack } from 'tamagui';
 import { categories } from '../categories';
 import { addTransaction } from '../services/database';
 
@@ -39,8 +39,8 @@ export default function TabNewTransactionScreen() {
   };
 
   return (
-    <ScrollView padding="$3">
-      <YStack gap="$2">
+    <View padding="$3">
+      <YStack gap="$3">
         <Controller
           control={control}
           render={({ field: { onChange, onBlur, value } }) => (
@@ -58,30 +58,6 @@ export default function TabNewTransactionScreen() {
         />
         {errors.amount && <Text style={styles.errorText}>{errors.amount.message}</Text>}
 
-        <XStack flexDirection="row" flexWrap="wrap" alignItems="stretch">
-          {categories.map((category) => (
-            <Button 
-              size='$2' 
-              key={category.slug} 
-              onPress={() => handleCategorySelect(category.slug)}
-              flexBasis="25%"
-              flexGrow={1}
-              flexShrink={1}
-              maxWidth="25%"
-              width="100%"
-            >
-              {category.name}
-            </Button>
-          ))}
-        </XStack>
-
-        <DateTimePicker
-          value={date}
-          mode="date"
-          display="default"
-          onChange={handleDateChange}
-        />
-
         <Controller
           control={control}
           render={({ field: { onChange, onBlur, value } }) => (
@@ -95,9 +71,28 @@ export default function TabNewTransactionScreen() {
           name="note"
         />
 
+        <XStack flexWrap="wrap" gap="$2">
+          {categories.map((category) => (
+            <Button 
+              size='$2' 
+              key={category.slug} 
+              onPress={() => handleCategorySelect(category.slug)}
+            >
+              {category.name}
+            </Button>
+          ))}
+        </XStack>
+
+        <DateTimePicker
+          value={date}
+          mode="date"
+          display="spinner"
+          onChange={handleDateChange}
+        />
+
         <Button onPress={handleSubmit(onSubmit)}>Add Transaction</Button>
       </YStack>
-    </ScrollView>
+    </View>
   );
 }
 
