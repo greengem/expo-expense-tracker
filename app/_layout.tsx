@@ -9,6 +9,7 @@ import '../tamagui-web.css';
 import { config } from '../tamagui.config';
 import { useFonts } from 'expo-font';
 
+
 export { ErrorBoundary } from 'expo-router';
 export const unstable_settings = { initialRouteName: '(tabs)', };
 
@@ -24,22 +25,17 @@ export default function RootLayout() {
   useEffect(() => {
     async function initializeApp() {
       try {
-        await initDB(); // Initialize DB
-        setDbInitialized(true); // Indicate DB initialization success
-        console.log("Database initialized successfully.");
+        await initDB();
+        setDbInitialized(true);
       } catch (error) {
         console.error("Failed to initialize database:", error);
-        setDbInitialized(true); // Still proceed but might want to handle this differently
-        // Optionally, handle DB initialization error (e.g., retry, user notification)
+        setDbInitialized(true);
       }
-  
-      // The check to hide the SplashScreen is moved outside this function
     }
   
     initializeApp();
   }, []);
   
-  // Use another useEffect to watch for both fonts and DB initialization
   useEffect(() => {
     // Only hide the SplashScreen when both fonts and DB are ready (or fonts failed to load)
     if ((fontsLoaded || fontsError) && dbInitialized) {
@@ -61,10 +57,10 @@ function RootLayoutNav() {
   return (
     <TamaguiProvider config={config} defaultTheme={colorScheme as any}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-        </Stack>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="new-category-modal" options={{ presentation: 'modal' }} />
+          </Stack>
       </ThemeProvider>
     </TamaguiProvider>
   );
