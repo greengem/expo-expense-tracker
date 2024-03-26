@@ -5,7 +5,13 @@ const db = SQLite.openDatabase('expense_tracker.db');
 // Initialize the database
 // Enhanced initDB with categories initialization
 export const initDB = (): Promise<void> => {
-  const defaultCategories = ['Food', 'Transportation', 'Housing', 'Utilities', 'Entertainment'];
+  const defaultCategories = [
+    { name: 'Food', color: 'red' },
+    { name: 'Transportation', color: 'blue' },
+    { name: 'Housing', color: 'green' },
+    { name: 'Utilities', color: 'yellow' },
+    { name: 'Entertainment', color: 'purple' }
+  ];
 
   return new Promise((resolve, reject) => {
     db.transaction(
@@ -37,7 +43,7 @@ export const initDB = (): Promise<void> => {
           (_, { rows }) => {
             if (rows._array[0].count === 0) {
               defaultCategories.forEach(category => {
-                tx.executeSql(`INSERT INTO categories (name) VALUES (?);`, [category]);
+                tx.executeSql(`INSERT INTO categories (name, color) VALUES (?, ?);`, [category.name, category.color]);
               });
             }
           }
@@ -187,23 +193,24 @@ export const fetchCategories = (): Promise<any[]> => {
 };
 
 
-// Add a new category to the database
-export const addCategory = (name: string): Promise<void> => {
+// Add a new category with color to the database
+export const addCategory = (name: string, color: string): Promise<void> => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
-        `INSERT INTO categories (name) VALUES (?);`,
-        [name],
+        `INSERT INTO categories (name, color) VALUES (?, ?);`,
+        [name, color],
         () => resolve(),
         (_, error) => {
           console.error("Error adding category:", error);
           reject(error);
-          return false;
+          return true; // returning true to indicate an error occurred
         }
       );
     });
   });
 };
+
 
 // Delete a category from the database
 export const deleteCategory = (name: string): Promise<void> => {
@@ -278,6 +285,60 @@ export const fetchTransactionsByYear = (year: number): Promise<any[]> => {
           return false;
         }
       );
+    });
+  });
+};
+
+
+export const deleteAllData = (): Promise<void> => {
+  const defaultCategories = [
+    { name: 'Food', color: 'red' },
+    { name: 'Transportation', color: 'blue' },
+    { name: 'Housing', color: 'green' },
+    { name: 'Utilities', color: 'yellow' },
+    { name: 'Entertainment', color: 'purple' }
+  ];
+
+  return new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      // Drop the tables
+      tx.executeSql(`DROP TABLE IF EXISTS transactions;`);
+      tx.executeSql(`DROP TABLE IF EXISTS categories;`);
+
+      // Recreate the transactions table
+      tx.executeSql(
+        `CREATE TABLE IF NOT EXISTS transactions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          amount REAL NOT NULL,
+          category INTEGER NOT NULL,
+          date TEXT NOT NULL,
+          note TEXT,
+          FOREIGN KEY (category) REFERENCES categories(id)
+        );`
+      );
+
+      // Recreate the categories table with color column
+      tx.executeSql(
+        `CREATE TABLE IF NOT EXISTS categories (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL UNIQUE,
+          color TEXT
+        );`
+      );
+
+      // Insert default categories
+      defaultCategories.forEach(({ name, color }) => {
+        tx.executeSql(`INSERT INTO categories (name, color) VALUES (?, ?);`, [name, color]);
+      });
+      
+    }, 
+    error => {
+      console.error("Error resetting database:", error);
+      reject(error);
+    }, 
+    () => {
+      console.log("All data deleted, tables reset, and default categories added successfully.");
+      resolve();
     });
   });
 };
