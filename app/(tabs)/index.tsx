@@ -1,7 +1,7 @@
 import { Text, Card, YStack, XStack, Button } from 'tamagui'
 import { useFocusEffect } from 'expo-router';
 import { useState, useCallback } from 'react';
-import { fetchCurrentBalance } from '../services/database';
+import { fetchCurrentBalance, deleteAllData } from '../services/database';
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react-native';
 
 export default function TabOneScreen() {
@@ -31,6 +31,15 @@ export default function TabOneScreen() {
     // Logic to add one day/month/year to selectedDate
   };
 
+  const handleDeleteAllData = async () => {
+    try {
+      await deleteAllData();
+      setCurrentBalance(null);
+    } catch (error) {
+      console.error('Failed to delete all data:', error);
+    }
+  };
+
 
 
   const formattedBalance = currentBalance !== null ? `$${currentBalance.toFixed(2)}` : '$0.00';
@@ -55,6 +64,7 @@ export default function TabOneScreen() {
         </Card.Header>
         <Card.Footer padded><Text fontSize="$10">{formattedBalance}</Text></Card.Footer>
       </Card>
+      <Button color="red" onPress={handleDeleteAllData}>Delete all data</Button>
     </YStack>
   );
 }
