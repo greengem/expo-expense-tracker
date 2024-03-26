@@ -10,16 +10,17 @@ export const initDB = (): Promise<void> => {
   return new Promise((resolve, reject) => {
     db.transaction(
       tx => {
-        // Create the transactions table
         tx.executeSql(
           `CREATE TABLE IF NOT EXISTS transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             amount REAL NOT NULL,
-            category TEXT NOT NULL,
+            category INTEGER NOT NULL,
             date TEXT NOT NULL,
-            note TEXT
+            note TEXT,
+            FOREIGN KEY (category) REFERENCES categories(id)
           );`
         );
+
 
         // Create the categories table
         tx.executeSql(
@@ -57,12 +58,12 @@ export const initDB = (): Promise<void> => {
 
 
 // Add a transaction to the database
-export const addTransaction = (amount: number, category: string, date: string, note?: string): Promise<void> => {
+export const addTransaction = (amount: number, categoryId: number, date: string, note?: string): Promise<void> => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
         `INSERT INTO transactions (amount, category, date, note) VALUES (?, ?, ?, ?);`,
-        [amount, category, date, note || null],
+        [amount, categoryId, date, note || null],
         () => resolve(),
         (_, error) => {
           console.error("Error adding transaction:", error);
@@ -74,25 +75,30 @@ export const addTransaction = (amount: number, category: string, date: string, n
   });
 };
 
+
 // Fetch all transactions from the database
 export const fetchTransactions = (): Promise<any[]> => {
   return new Promise((resolve, reject) => {
-    db.transaction(
-      tx => {
-        tx.executeSql(
-          `SELECT * FROM transactions;`,
-          [],
-          (_, { rows: { _array } }) => resolve(_array),
-          (_, error) => {
-            console.error("Error fetching transactions:", error);
-            reject(error);
-            return false;
-          }
-        );
-      }
-    );
+    db.transaction(tx => {
+      tx.executeSql(
+        `SELECT transactions.*, categories.name AS categoryName FROM transactions
+         INNER JOIN categories ON transactions.category = categories.id;`,
+        [],
+        (_, result) => {
+          const transactions = result.rows._array;
+          resolve(transactions);
+        },
+        (_, error) => {
+          console.error("Error fetching transactions:", error);
+          reject(error);
+          return false;
+        }
+      );
+    });
   });
 };
+
+
 
 // Delete a transaction from the database
 export const deleteTransaction = (id: number): Promise<void> => {
@@ -112,6 +118,28 @@ export const deleteTransaction = (id: number): Promise<void> => {
   });
 };
 
+// Debug function to fetch and log all rows from the transactions table
+export const debugFetchAllTransactions = (): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        `SELECT * FROM transactions;`,
+        [],
+        (_, result) => {
+          console.log("Debug - All Transactions Rows:", result.rows._array);
+          resolve();
+        },
+        (_, error) => {
+          console.error("Error during debug fetch of all transactions:", error);
+          reject(error);
+          return false;
+        }
+      );
+    });
+  });
+};
+
+
 // Fetch the current balance from the database
 export const fetchCurrentBalance = (): Promise<number> => {
   return new Promise((resolve, reject) => {
@@ -119,7 +147,11 @@ export const fetchCurrentBalance = (): Promise<number> => {
       tx.executeSql(
         `SELECT SUM(amount) AS balance FROM transactions;`,
         [],
-        (_, { rows }) => resolve(rows._array[0].balance),
+        (_, { rows }) => {
+          // Handle null result explicitly
+          const balance = rows._array[0].balance ?? 0;
+          resolve(balance);
+        },
         (_, error) => {
           console.error("Error fetching current balance:", error);
           reject(error);
@@ -129,6 +161,7 @@ export const fetchCurrentBalance = (): Promise<number> => {
     });
   });
 };
+
 
 // Fetch all categories from the database
 export const fetchCategories = (): Promise<any[]> => {
@@ -182,6 +215,65 @@ export const deleteCategory = (name: string): Promise<void> => {
         () => resolve(),
         (_, error) => {
           console.error("Error deleting category:", error);
+          reject(error);
+          return false;
+        }
+      );
+    });
+  });
+};
+
+export const fetchTransactionsByDay = (date: string): Promise<any[]> => {
+  return new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        `SELECT * FROM transactions WHERE date(date) = date(?) ORDER BY date DESC;`,
+        [date],
+        (_, result) => {
+          resolve(result.rows._array);
+        },
+        (_, error) => {
+          console.error("Error fetching daily transactions:", error);
+          reject(error);
+          return false;
+        }
+      );
+    });
+  });
+};
+
+
+export const fetchTransactionsByMonth = (year: number, month: number): Promise<any[]> => {
+  return new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        `SELECT * FROM transactions WHERE strftime('%Y', date) = ? AND strftime('%m', date) = ? ORDER BY date DESC;`,
+        [year.toString(), month.toString().padStart(2, '0')], // Ensure month is two digits
+        (_, result) => {
+          resolve(result.rows._array);
+        },
+        (_, error) => {
+          console.error("Error fetching monthly transactions:", error);
+          reject(error);
+          return false;
+        }
+      );
+    });
+  });
+};
+
+
+export const fetchTransactionsByYear = (year: number): Promise<any[]> => {
+  return new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        `SELECT * FROM transactions WHERE strftime('%Y', date) = ? ORDER BY date DESC;`,
+        [year.toString()],
+        (_, result) => {
+          resolve(result.rows._array);
+        },
+        (_, error) => {
+          console.error("Error fetching yearly transactions:", error);
           reject(error);
           return false;
         }
