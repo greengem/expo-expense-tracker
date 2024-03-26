@@ -14,18 +14,6 @@ export default function TabLayout() {
         options={{
           title: 'Dashboard',
           tabBarIcon: ({ color }) => <IconDashboard size={28} color={color} />,
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <IconInfoCircle
-                    size={25}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
-          ),
         }}
       />
       <Tabs.Screen
@@ -40,6 +28,18 @@ export default function TabLayout() {
         options={{
           title: 'Categories',
           tabBarIcon: ({ color }) => <IconCategory color={color} />,
+          headerRight: () => (
+            <Link href="/new-category-modal" asChild>
+              <Pressable>
+                {({ pressed }) => (
+                  <IconInfoCircle
+                    size={25}
+                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
+                  />
+                )}
+              </Pressable>
+            </Link>
+          ),
         }}
       />
       <Tabs.Screen
