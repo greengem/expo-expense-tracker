@@ -21,7 +21,9 @@
     "@tabler/icons-react-native": "^3.1.0",
     "@tamagui/config": "^1.92.1",
     "@tamagui/metro-plugin": "^1.92.1",
+    "@tamagui/toast": "^1.92.1",
     "babel-preset-expo": "^10.0.1",
+    "burnt": "^0.12.2",
     "date-fns": "^3.6.0",
     "expo": "~50.0.6",
     "expo-font": "~11.10.2",
@@ -43,7 +45,8 @@
     "react-native-svg": "^15.1.0",
     "react-native-web": "^0.19.10",
     "tamagui": "^1.92.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "victory-native": "^37.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.23.3",
